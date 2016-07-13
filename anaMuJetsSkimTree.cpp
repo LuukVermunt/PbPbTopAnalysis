@@ -47,49 +47,49 @@ void anaMuJetsSkimTree::BuildHistograms(void){
   	h_events_[i] = new TH1F(Form("h_events_%d",i),"Number selected events",3,0,3);
   	h_totevents[i] = new TH1F(Form("h_totevents%d",i),"Total SkimTree events",3,0,3);
 
-    h_lepPt_[i] = new TH1F(Form("h_lepPt_%d",i),"pT of muon",30,0,300);
-    h_lepPseu_[i] = new TH1F(Form("h_lepPseu_%d",i),"Pseudorapidity of muon",12,0,3);
-    h_jetHt_[i] = new TH1F(Form("h_jetHt_%d",i),"H_T of all jets",40,0,1800);
-    h_jetCSV_[i] = new TH1F(Form("h_jetCSV_%d",i),"CSV of all jets",100,0,1);
-    //h_lepbjetMinv_[i] = new TH1F(Form("h_lepbjetMinv_%d",i),"M_inv of Lepton and b-tagged jets",100,0,300);
-    h_lepbjetMinv_min_[i] = new TH1F(Form("h_lepbjetMinv_min_%d",i),"M_inv of Lepton and b-tagged jet (plotted min of each event)",100,0,300);
-    //h_ttMinv_[i] = new TH1F(Form("h_ttMinv_%d",i),"M_inv of ttbar",100,0,800);
-    h_ttMinv_min_[i] = new TH1F(Form("h_ttMinv_min_%d",i),"M_inv of ttbar (plotted min of each event)",100,0,800);
-    h_Phi_1stb_[i] = new TH1F(Form("h_Phi_1stb_%d",i),"Delta-Phi of muon-leading b-jet in opposite hemisphere",30,0,3.2);
-    h_Phi_allb_[i] = new TH1F(Form("h_Phi_allb_%d",i),"Delta-Phi of muon-all b-jets in opposite hemisphere",30,0,3.2);
-    h_Phi_b_minpi_[i] = new TH1F(Form("h_Phi_b_minpi_%d",i),"Delta-Phi of muon-b-jet most close to pi",30,0,3.2);
+    	h_lepPt_[i] = new TH1F(Form("h_lepPt_%d",i),"pT of muon",30,0,300);
+	h_lepPseu_[i] = new TH1F(Form("h_lepPseu_%d",i),"Pseudorapidity of muon",12,0,3);
+    	h_jetHt_[i] = new TH1F(Form("h_jetHt_%d",i),"H_T of all jets",40,0,1800);
+    	h_jetCSV_[i] = new TH1F(Form("h_jetCSV_%d",i),"CSV of all jets",100,0,1);
+    	//h_lepbjetMinv_[i] = new TH1F(Form("h_lepbjetMinv_%d",i),"M_inv of Lepton and b-tagged jets",100,0,300);
+    	h_lepbjetMinv_min_[i] = new TH1F(Form("h_lepbjetMinv_min_%d",i),"M_inv of Lepton and b-tagged jet (plotted min of each event)",100,0,300);
+    	//h_ttMinv_[i] = new TH1F(Form("h_ttMinv_%d",i),"M_inv of ttbar",100,0,800);
+    	h_ttMinv_min_[i] = new TH1F(Form("h_ttMinv_min_%d",i),"M_inv of ttbar (plotted min of each event)",100,0,800);
+    	h_Phi_1stb_[i] = new TH1F(Form("h_Phi_1stb_%d",i),"Delta-Phi of muon-leading b-jet in opposite hemisphere",30,0,3.2);
+    	h_Phi_allb_[i] = new TH1F(Form("h_Phi_allb_%d",i),"Delta-Phi of muon-all b-jets in opposite hemisphere",30,0,3.2);
+    	h_Phi_b_minpi_[i] = new TH1F(Form("h_Phi_b_minpi_%d",i),"Delta-Phi of muon-b-jet most close to pi",30,0,3.2);
 
-    h_2dCSV_[i] = new TH2F(Form("h_2dCSV_%d",i),"CSV of 1st vs 2nd b-jet",110,-0.1,1,110,-0.1,1);
-    h_2dCSV2_[i] = new TH2F(Form("h_2dCSV2_%d",i),"CSV of 1st vs 3rd b-jet",110,-0.1,1,110,-0.1,1);
+    	h_2dCSV_[i] = new TH2F(Form("h_2dCSV_%d",i),"CSV of 1st vs 2nd b-jet",110,-0.1,1,110,-0.1,1);
+    	h_2dCSV2_[i] = new TH2F(Form("h_2dCSV2_%d",i),"CSV of 1st vs 3rd b-jet",110,-0.1,1,110,-0.1,1);
   }
 
 }
 
 void anaMuJetsSkimTree::CalculateNormalizationHistograms(TH1F* h[4], int option){
 
-	//float xsections_[4] = {0.404, 0.02603, 0.64, 0.4256};			           //from MC HiForest files
-	float xsections_[4] = {0.404, 0.45*2815.476, 875572.232, 82016.04};    //Pedro's mail (0.45 is BR-factor (only needed for ttbar))
-	float nGenerated[4] = {1943558, 95686, 497575, 394186};                //from HiForest files
+	//float xsections_[4] = {0.404, 0.02603, 0.64, 0.4256};			//from MC HiForest files
+	float xsections_[4] = {0.404, 0.45*2815.476, 875572.232, 82016.04};    	//Pedro's mail (0.45 is BR-factor (only needed for ttbar))
+	float nGenerated[4] = {1943558, 95686, 497575, 394186};                	//from HiForest files
 
-  //Number of selected events after cuts on analyse niveau
+  	//Number of selected events after cuts on analyse niveau
 	double nSelected[4] = {h_events_[0]->GetEntries(), h_events_[1]->GetEntries(), h_events_[2]->GetEntries(), h_events_[3]->GetEntries()};
-  double Normfactor = xsections_[option] * xsections_[0]/(nGenerated[option]);
+  	double Normfactor = xsections_[option] * xsections_[0]/(nGenerated[option]);
 	double nEventsExp = Normfactor * nSelected[option];
   
-  //Normalise MC histograms
-  for(int i = h[option]->GetXaxis()->GetFirst(); i < h[option]->GetXaxis()->GetLast() + 1; i++){
-    h[option]->SetBinContent(i, (nEventsExp * h[option]->GetBinContent(i))/( h_events_[option]->GetEntries() ) );
-  }
+  	//Normalise MC histograms
+  	for(int i = h[option]->GetXaxis()->GetFirst(); i < h[option]->GetXaxis()->GetLast() + 1; i++){
+    		h[option]->SetBinContent(i, (nEventsExp * h[option]->GetBinContent(i))/( h_events_[option]->GetEntries() ) );
+  	}
 
 /*  
-  //Print number of events/normalized number of events
-  cout << h[option]->GetName() << endl;
-  cout << " Normfactor option " << option << " " << Normfactor << endl;
-  cout << "  Expected events after basic muon-cuts: " << Normfactor * h_totevents[option]->GetEntries() << " (" << h_totevents[option]->GetEntries() << ")" << endl;
-  cout << "  Expected events after basic jet-cuts: " << nEventsExp << " (" << nSelected[option] << ")" << endl;
+  	//Print number of events/normalized number of events
+  	cout << h[option]->GetName() << endl;
+  	cout << " Normfactor option " << option << " " << Normfactor << endl;
+  	cout << "  Expected events after basic muon-cuts: " << Normfactor * h_totevents[option]->GetEntries() << " (" << h_totevents[option]->GetEntries() << ")" << endl;
+  	cout << "  Expected events after basic jet-cuts: " << nEventsExp << " (" << nSelected[option] << ")" << endl;
 
-  cout << "  DATA: Expected events after basic muon-cuts: " << h_totevents[0]->GetEntries() << endl;
-  cout << "  DATA: Expected events after basic jet-cuts: " << nSelected[0] << endl;
+  	cout << "  DATA: Expected events after basic muon-cuts: " << h_totevents[0]->GetEntries() << endl;
+  	cout << "  DATA: Expected events after basic jet-cuts: " << nSelected[0] << endl;
 */
 
 }
@@ -102,20 +102,19 @@ void anaMuJetsSkimTree::NormalizeHistograms(int option, int Drawoption){
 		//histogram is data, no normalization needed
 
 	} else {
-    //histogram is MC, normalization needed
+    		//histogram is MC, normalization needed
 
 		CalculateNormalizationHistograms(h_lepPt_, option);
 		CalculateNormalizationHistograms(h_lepPseu_, option);
 		CalculateNormalizationHistograms(h_jetHt_, option);
 		
-    if(Drawoption == 1)	CalculateNormalizationHistograms(h_jetCSV_, option);
-
+    		if(Drawoption == 1)	CalculateNormalizationHistograms(h_jetCSV_, option);
 		if(Drawoption == 11){	
-      //CalculateNormalizationHistograms(h_lepbjetMinv_, option);
-      //CalculateNormalizationHistograms(h_ttMinv_, option);
-      CalculateNormalizationHistograms(h_lepbjetMinv_min_, option);
-      CalculateNormalizationHistograms(h_ttMinv_min_, option);
-    }
+      			//CalculateNormalizationHistograms(h_lepbjetMinv_, option);
+      			//CalculateNormalizationHistograms(h_ttMinv_, option);
+      			CalculateNormalizationHistograms(h_lepbjetMinv_min_, option);
+      			CalculateNormalizationHistograms(h_ttMinv_min_, option);
+    		}
 	}
 }
 
@@ -123,9 +122,9 @@ void anaMuJetsSkimTree::NormalizeHistograms(int option, int Drawoption){
 double anaMuJetsSkimTree::CalculateDeltaPhi(int ilep, int index_b){
 /*Calculates deltaphi (between 0 and pi) between a muon and a jet*/
 
-  double deltaphi = TMath::Abs(TVector2::Phi_mpi_pi(lepPhi[ilep] - jtPhi[index_b]) );
+	double deltaphi = TMath::Abs(TVector2::Phi_mpi_pi(lepPhi[ilep] - jtPhi[index_b]) );
 
-  return deltaphi;
+	return deltaphi;
 
 }
 
@@ -414,7 +413,7 @@ void anaMuJetsSkimTree::FillHistogramsAfterCuts(int option, int i){
 
 
 
-//Have to clean up the two functions below...
+//Have to clean up the two functions (Layout and Plotting) below. They are a mess...
 
 void anaMuJetsSkimTree::LayoutHistograms(int option){
 
