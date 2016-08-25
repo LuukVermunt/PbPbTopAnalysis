@@ -16,7 +16,7 @@ const bool isDebug = false;
 // Jet and lepton selection
 const float jetPtCut  = 25.;
 const float jetEtaCut = 3.;
-const int   minNJets  = 4;   //Note: you will have to change this to make control distributions for events with less than 4 jets
+const int   minNJets  = 3;   //Note: you will have to change this to make control distributions for events with less than 4 jets
 
 const float muEtaCut = 2.1;
 const float muPtCut  = 15.;
@@ -49,6 +49,7 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
 
   TChain *lepTree_p = new TChain("ggHiNtuplizer/EventTree");
   TChain *jetTree_p = new TChain("akCs2PFJetAnalyzer/t");
+  TChain *genTree_p = new TChain("HiGenParticleAna/hi");
   TChain *hiTree_p = new TChain("hiEvtAnalyzer/HiTree");
   TChain *hltTree_p = new TChain("hltanalysis/HltTree");
   TChain *pfTree_p = new TChain("pfcandAnalyzerCS/pfTree");
@@ -60,6 +61,7 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
     std::cout << "On file: " << fileIter << "/" << nFiles << "  " << inFileNames_p->at(fileIter).c_str()  << std::endl;
     lepTree_p->Add(inFileNames_p->at(fileIter).c_str());
     jetTree_p->Add(inFileNames_p->at(fileIter).c_str());
+    genTree_p->Add(inFileNames_p->at(fileIter).c_str());
     hiTree_p->Add(inFileNames_p->at(fileIter).c_str());
     hltTree_p->Add(inFileNames_p->at(fileIter).c_str());
     pfTree_p->Add(inFileNames_p->at(fileIter).c_str());
@@ -75,6 +77,19 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
   float         jtphi[maxJets];   //[nref]
   float         jtm[maxJets];   //[nref]
   float         discr_csvV1[maxJets]; //[nref]
+  float         discr_csvV2[maxJets];
+  float         discr_tcHighEff[maxJets];
+  float         discr_tcHighPur[maxJets];
+  float         discr_prob[maxJets];
+  float         svtxm[maxJets];
+  float         svtxpt[maxJets];
+  int         refparton_flavorForB[maxJets];
+
+  std::vector<int>     *genpdg = 0;
+  std::vector<float>   *genpt = 0;
+  std::vector<float>   *geneta = 0;
+  std::vector<float>   *genphi = 0;
+  std::vector<int>     *genchg = 0;
 
   //pf particles pfId, pfPt, pfEta, pfPhi
   std::vector<int>           *pfId = 0;
@@ -112,6 +127,13 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
   jetTree_p->SetBranchStatus("jteta", 1);
   jetTree_p->SetBranchStatus("jtm", 1);
   jetTree_p->SetBranchStatus("discr_csvV1", 1);
+  jetTree_p->SetBranchStatus("discr_csvV2", 1);
+  jetTree_p->SetBranchStatus("discr_tcHighEff", 1);
+  jetTree_p->SetBranchStatus("discr_tcHighPur", 1);
+  jetTree_p->SetBranchStatus("discr_prob", 1);
+  jetTree_p->SetBranchStatus("svtxm", 1);
+  jetTree_p->SetBranchStatus("svtxpt", 1);
+  jetTree_p->SetBranchStatus("refparton_flavorForB", 1);
         
   jetTree_p->SetBranchAddress("nref", &nref);
   jetTree_p->SetBranchAddress("jtpt", jtpt);
@@ -119,6 +141,26 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
   jetTree_p->SetBranchAddress("jteta", jteta);
   jetTree_p->SetBranchAddress("jtm", jtm);
   jetTree_p->SetBranchAddress("discr_csvV1", discr_csvV1);
+  jetTree_p->SetBranchAddress("discr_csvV2", discr_csvV2);
+  jetTree_p->SetBranchAddress("discr_tcHighEff", discr_tcHighEff);
+  jetTree_p->SetBranchAddress("discr_tcHighPur", discr_tcHighPur);
+  jetTree_p->SetBranchAddress("discr_prob", discr_prob);
+  jetTree_p->SetBranchAddress("svtxm", svtxm);
+  jetTree_p->SetBranchAddress("svtxpt", svtxpt);
+  jetTree_p->SetBranchAddress("refparton_flavorForB", refparton_flavorForB);
+
+  genTree_p->SetBranchStatus("*", 0);
+  genTree_p->SetBranchStatus("pdg", 1);
+  genTree_p->SetBranchStatus("pt", 1);
+  genTree_p->SetBranchStatus("eta", 1);
+  genTree_p->SetBranchStatus("phi", 1);
+  genTree_p->SetBranchStatus("chg", 1);
+
+  genTree_p->SetBranchAddress("pdg", &genpdg);
+  genTree_p->SetBranchAddress("pt", &genpt);
+  genTree_p->SetBranchAddress("eta", &geneta);
+  genTree_p->SetBranchAddress("phi", &genphi);
+  genTree_p->SetBranchAddress("chg", &genchg);
     
   hiTree_p->SetBranchStatus("*", 0);
   hiTree_p->SetBranchStatus("run", 1);
@@ -126,12 +168,14 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
   hiTree_p->SetBranchStatus("lumi", 1);
   hiTree_p->SetBranchStatus("hiBin", 1);
   hiTree_p->SetBranchStatus("vz", 1);
+  hiTree_p->SetBranchStatus("weight", 1);
     
   hiTree_p->SetBranchAddress("run", &run_);
   hiTree_p->SetBranchAddress("evt", &evt_);
   hiTree_p->SetBranchAddress("lumi", &lumi_);
   hiTree_p->SetBranchAddress("hiBin", &hiBin_);
   hiTree_p->SetBranchAddress("vz", &vz_);
+  hiTree_p->SetBranchAddress("weight", &weight_);
 
   pfTree_p->SetBranchAddress("pfId", &pfId);
   pfTree_p->SetBranchAddress("pfPt", &pfPt);
@@ -151,7 +195,8 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
   if(isDebug) std::cout << __LINE__ << std::endl;
     
   int nEntries = (int)lepTree_p->GetEntries();
-  //nEntries = 100;
+  //nEntries = 5000;
+  nEntries = 100;
   int entryDiv = ((int)(nEntries/20));
     
   if(isDebug) std::cout << __LINE__ << std::endl;
@@ -172,10 +217,11 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
     hiTree_p->GetEntry(entry);
     lepTree_p->GetEntry(entry);
     jetTree_p->GetEntry(entry);
+    genTree_p->GetEntry(entry);
     hltTree_p->GetEntry(entry);
     pfTree_p->GetEntry(entry);
     skimAnaTree_p->GetEntry(entry);
-    
+
     if(!isMC && !trig) continue;
     t1++;
     if(!phfCoincFilter) continue;
@@ -224,6 +270,21 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
       jtPhi_[ij] = -999.;
       jtM_[ij] = -999.;
       discr_csvV1_[ij] = -999.;
+      discr_csvV2_[ij] = -999.;
+      discr_tcHighEff_[ij] = -999.;
+      discr_tcHighPur_[ij] = -999.;
+      discr_prob_[ij] = -999.;
+      svtxm_[ij] = -999.;
+      svtxpt_[ij] = -999.;
+      refparton_flavorForB_[ij] = -999;
+    }
+
+    for(int ijgen = 0; ijgen < nMaxGen; ++ijgen){
+      genPdg_[ijgen] = -999;
+      genPt_[ijgen] = -999;
+      genEta_[ijgen] = -999;
+      genPhi_[ijgen] = -999;
+      genChg_[ijgen] = -999;
     }
       
     if(isDebug) std::cout << __LINE__ << std::endl;
@@ -282,11 +343,11 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
       if(tempMuPt_[muIter]<0.) continue;
       m11++;
 
-      if(hiBin_<20 && tempMuIso_[muIter]>0.58) continue;
-      else if(hiBin_>=20 && hiBin_<60 && tempMuIso_[muIter]>0.45) continue;
-      else if(hiBin_>=60 && hiBin_<100 && tempMuIso_[muIter]>0.3) continue;
-      else if(hiBin_>=100 && hiBin_<140 && tempMuIso_[muIter]>0.24) continue;
-      else if(hiBin_>=140 && tempMuIso_[muIter]>0.18) continue;
+      //if(hiBin_<20 && tempMuIso_[muIter]>0.58) continue;
+      //else if(hiBin_>=20 && hiBin_<60 && tempMuIso_[muIter]>0.45) continue;
+      //else if(hiBin_>=60 && hiBin_<100 && tempMuIso_[muIter]>0.3) continue;
+      //else if(hiBin_>=100 && hiBin_<140 && tempMuIso_[muIter]>0.24) continue;
+      //else if(hiBin_>=140 && tempMuIso_[muIter]>0.18) continue;
       m12++;
 
       lepPt_[lepIter] = tempMuPt_[muIter];
@@ -312,12 +373,27 @@ void makeMuJetsSkim(const std::string outFileName = "", const std::string inFile
       jtPhi_[njets] = jtphi[jetIter];
       jtM_[njets]   = jtm[jetIter]; 
       discr_csvV1_[njets] = discr_csvV1[jetIter];
+      discr_csvV2_[njets] = discr_csvV2[jetIter];
+      discr_tcHighEff_[njets] = discr_tcHighEff[jetIter];
+      discr_tcHighPur_[njets] = discr_tcHighPur[jetIter];
+      discr_prob_[njets] = discr_prob[jetIter];
+      svtxm_[njets] = svtxm[jetIter];
+      svtxpt_[njets] = svtxpt[jetIter];
+      refparton_flavorForB_[njets] = refparton_flavorForB[jetIter];
       ++njets;
     }
     nJt_ = njets;
     if(nJt_<minNJets) continue; //need at least 2 b jets (t->Wb) and 2 light jets (W->qqbar)
     t8++;
     m14 += lepIter;
+
+    std::copy(genpdg->begin(), genpdg->end(), genPdg_);
+    std::copy(genpt->begin(), genpt->end(), genPt_);
+    std::copy(geneta->begin(), geneta->end(), genEta_);
+    std::copy(genphi->begin(), genphi->end(), genPhi_);
+    std::copy(genchg->begin(), genchg->end(), genChg_);
+    nGen_ = (int)genpdg->size();
+
     skimTree_p->Fill();
     
   }//entries loop
